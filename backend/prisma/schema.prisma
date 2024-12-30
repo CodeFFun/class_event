@@ -13,20 +13,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model user{
-    user_id String @id @default(uuid())
-    user_name String
-    user_email String
-    user_password String
-    user_address String?
-    user_phone Int?
-    user_gender String?
-    Role Role @default(STUDENT)
+model user {
+  user_id        String   @id @default(uuid())
+  user_email     String   @unique
+  user_name      String?
+  user_password  String
+  user_contact   String?
+  user_role      Role     @default(USER)
 }
 
-enum Role{
-    STUDENT
-    ADMIN
-    TEACHER
-    MODULE_HEAD
-}
+enum Role {
+  USER
+  ADMIN
+  ORGANIZER
+  }
