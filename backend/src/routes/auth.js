@@ -6,7 +6,7 @@ const authRouter = express.Router();
 const auth = new authController();
 const user = new userController();
 
-authRouter.post('/register', user.createUser)
+authRouter.post('/register', auth.register)
 
 authRouter.post('/login', auth.login)
 
