@@ -20,10 +20,56 @@ model user {
   user_password  String
   user_contact   String?
   user_role      Role     @default(USER)
+  reviews        reviews[]
+  events         events[]
 }
+
 
 enum Role {
   USER
   ADMIN
-  ORGANIZER
+  ORGANIZATION
   }
+
+enum event{
+  CONCERT
+  FESTIVAL
+  SPORTS
+  MOVIES
+  THEATER
+  OTHERS
+}
+
+model events{
+  event_id        String   @id @default(uuid())
+  event_name      String
+  event_description String
+  event_poster    String?
+  event_date      String
+  event_location  String
+  event_type      event[]
+  user_id    String?
+  user       user? @relation(fields: [user_id], references: [user_id])
+  reviews         reviews[]
+  tickets         ticket[]
+}
+
+model reviews{
+  review_id       String   @id @default(uuid())
+  review_content  String
+  review_rating   Int
+  event_id        String
+  user_id         String
+  user            user     @relation(fields: [user_id], references: [user_id])
+  event           events   @relation(fields: [event_id], references: [event_id])
+}
+
+model ticket{
+  ticket_id       String   @id @default(uuid())
+  ticket_price    Int
+  ticket_quantity Int
+  event_id        String
+  event           events   @relation(fields: [event_id], references: [event_id])
+}
+
+

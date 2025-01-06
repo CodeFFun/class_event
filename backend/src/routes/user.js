@@ -11,7 +11,7 @@ userRouter.get('/', (_, res) => {
 userRouter.get('/:id', user.getUserById);
 
 
-userRouter.post('/:id', (_, res) => {
+userRouter.post('/create', (_, res) => {
     res.send('User');
 })
 

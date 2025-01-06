@@ -44,6 +44,9 @@ class userController{
                     user_id: id
                 }
             })
+            if(!newUser){
+                res.json(dataResponse(null, 'User not found', 404));
+            }
             res.json(dataResponse(newUser, 'User fetched successfully', 200));
         } catch(e){
             res.json(dataResponse(null, e.message, 500));
@@ -66,6 +69,9 @@ class userController{
                 user_id: newUser.user_id,
                 user_role: newUser.user_role
             }, res);
+            if(!newUser){
+                res.json(dataResponse(null, 'No user with this email exists', 404));
+            }
             res.json(dataResponse(newUser, 'User fetched successfully', 200));
 
         } catch(e){
@@ -86,6 +92,9 @@ class userController{
                 },
                 data: req.body
             })
+            if(!newUser){
+                res.json(dataResponse(null, 'User not found', 404));
+            }
             res.json(dataResponse(newUser, 'User updated successfully', 200));
         } catch(e){
             res.json(dataResponse(null, e.message, 500));
@@ -104,6 +113,9 @@ class userController{
                     user_id: id
                 }
             })
+            if(!newUser){
+                res.json(dataResponse(null, 'User not found', 404));
+            }
             res.json(dataResponse(newUser, 'User deleted successfully', 200));
         } catch(e){
             res.json(dataResponse(null, e.message, 500));
