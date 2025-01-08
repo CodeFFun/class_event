@@ -1,15 +1,25 @@
-const user = require('../controller/userController.js');
+const userController = require('../controller/userController.js');
 
 class authController {
-  constructor() {
-    this.newUser = new user();
-  }
-    async login(req, res) {
+    constructor() {
+      this.newUser = null
+    }
+     async init(){
+        this.newUser = new userController();
+      }
+
+    login = async (req, res) => {
       // do something
+      if(!this.newUser){
+        await this.init();
+      }
       this.newUser.getUserByEmail(req, res);
     }
-    async register(req, res) {
+     register = async (req, res) => {
       // do something
+      if(!this.newUser){
+        await this.init();
+      }
       this.newUser.createUser(req, res);
     }
   }
