@@ -1,5 +1,6 @@
 const dataResponse = require('../lib/dataResponse.js');
 const {hashPassword} = require('../middleware/hashPassword.js');
+const {comparePassword} = require('../middleware/hashPassword.js');
 const {user} = require('../lib/client.js')
 const{generateCookie} = require('../lib/cookie.js');
 
@@ -7,7 +8,7 @@ class userController{
      createUser = async (req, res) => {
         let {name,email, password, contact} = req.body;
         if(!name || !email || !password || !contact ){
-            res.json(dataResponse(null, 'All fields are required', 400));
+           return res.json(dataResponse(null, 'All fields are required', 400));
         }
         try{
             //hash the password and save the user to the database
@@ -21,11 +22,12 @@ class userController{
                 }
             })
             //create a jwt token and send it to the user cookie
-            generateCookie({
+            await generateCookie({
                 user_id: newUser.user_id,
                 user_role: newUser.user_role
             }, res);
-            res.json(dataResponse(newUser, 'User created successfully', 201));
+
+            res.json(dataResponse(null, 'User created successfully', 201));
             
         } catch(e){
             res.json(dataResponse(null, e.message, 500));
@@ -35,7 +37,7 @@ class userController{
     getUserById = async (req, res) => {
         const {id} = req.params;
         if(!id){
-            res.json(dataResponse(null, 'Not enough credentials', 400));
+            return res.json(dataResponse(null, 'Not enough credentials', 400));
         }
         try{
             //get the user from the database
@@ -45,7 +47,7 @@ class userController{
                 }
             })
             if(!newUser){
-                res.json(dataResponse(null, 'User not found', 404));
+                return res.json(dataResponse(null, 'User not found', 404));
             }
             res.json(dataResponse(newUser, 'User fetched successfully', 200));
         } catch(e){
@@ -54,9 +56,9 @@ class userController{
     }
 
     getUserByEmail = async  (req, res) => {
-        const {email} = req.body;
-        if(!email){
-            res.json(dataResponse(null, 'Not enough credentials', 400));
+        const {email,password} = req.body;
+        if(!email || !password){
+           return  res.json(dataResponse(null, 'Not enough credentials', 400));
         }
         try{
             //get the user from the database
@@ -65,7 +67,11 @@ class userController{
                     user_email: email
                 }
             })
-            generateCookie({
+            //compare the password
+            if(!comparePassword(password, newUser.user_password)){
+                return res.json(dataResponse(null, "Username or password doesn't match", 403));
+            }
+            await generateCookie({
                 user_id: newUser.user_id,
                 user_role: newUser.user_role
             }, res);
@@ -82,7 +88,7 @@ class userController{
     updateUser = (req, res) => {
         const {id} = req.params;
         if(!id){
-            res.json(dataResponse(null, 'Not enough credentials', 400));
+           return res.json(dataResponse(null, 'Not enough credentials', 400));
         }
         try{
             //update the user in the database
@@ -104,7 +110,7 @@ class userController{
     deleteUser = async (req, res) => {
         const {id} = req.params;
         if(!id){
-            res.json(dataResponse(null, 'Not enough credentials', 400));
+            return res.json(dataResponse(null, 'Not enough credentials', 400));
         }
         try{
             //delete the user from the database
