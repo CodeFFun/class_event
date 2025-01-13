@@ -1,11 +1,13 @@
 import './lib/App.css'
+import Login from "./components/auth/LoginComponent"
 
 function App() {
 
   return (
-    <>
-      <h1>Eventhub</h1>
-    </>
+    <div>
+      <Login />
+    </div>
+   
   )
 }
 
