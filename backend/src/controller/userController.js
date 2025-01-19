@@ -67,14 +67,6 @@ class userController{
                     user_email: email
                 }
             })
-            //compare the password
-            if(!comparePassword(password, newUser.user_password)){
-                return res.json(dataResponse(null, "Username or password doesn't match", 403));
-            }
-            await generateCookie({
-                user_id: newUser.user_id,
-                user_role: newUser.user_role
-            }, res);
             if(!newUser){
                 res.json(dataResponse(null, 'No user with this email exists', 404));
             }

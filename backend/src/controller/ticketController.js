@@ -5,7 +5,7 @@ class ticketController{
     getAllTicket = async (req, res) => {
         const {eventId} = req.params;
         if(!eventId){
-             res.status(400).json(dataResponse(null, "No enough credientials", 400));
+             return res.status(400).json(dataResponse(null, "No enough credientials", 400));
         }
         try {
             const tempTicket = await ticket.findMany({ where: {event_id: eventId}});
@@ -20,21 +20,24 @@ class ticketController{
     }
 
     createTicket = async (req, res) => {
-        const {eventId} = req.params;
-        const {ticketType, ticketPrice, ticketQuantity} = req.body;
-        if(!eventId){
-             res.status(400).json(dataResponse(null, "No enough credientials", 400));
+        const {userId} = req.locals;
+        const {ticketPrice, ticketQuantity} = req.body;
+        if(!userId){
+            return res.status(400).json(dataResponse(null, "No enough credientials", 400));
         }
-        if(!ticketType || !ticketPrice || !ticketQuantity){
-             res.status(400).json(dataResponse(null, "All fields are required", 400));
+        if(!ticketPrice || !ticketQuantity){
+            return res.status(400).json(dataResponse(null, "All fields are required", 400));
         }
         try {
             await ticket.create({
                 data: {
-                    event_id: eventId,
-                    ticket_type: ticketType,
                     ticket_price: ticketPrice,
-                    ticket_quantity: ticketQuantity
+                    ticket_quantity: ticketQuantity,
+                    user:{
+                        connect:{
+                            user_id: userId
+                        }
+                    }
                 }
             })
              res.status(201).json(dataResponse(null, "Ticket created", 201));
@@ -46,17 +49,13 @@ class ticketController{
 
     updateTicket = async (req, res) => {
         const {ticketId} = req.params;
-        const {ticketType, ticketPrice, ticketQuantity} = req.body;
+        let data = req.body;
         if(!ticketId){
              res.status(400).json(dataResponse(null, "No enough credientials", 400));
         }
         try {
             await ticket.update({
-                data: {
-                    ticket_type: ticketType,
-                    ticket_price: ticketPrice,
-                    ticket_quantity: ticketQuantity
-                },
+                data: data,
                 where: {
                     ticket_id: ticketId
                 }

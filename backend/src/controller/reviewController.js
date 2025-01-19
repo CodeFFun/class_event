@@ -24,14 +24,14 @@ class reviewController{
 
     async createReview(req, res){
         const {eventId} = req.params;
-        const {userId, rating, comment} = req.body;
-        if(!eventId){
-            res.json(dataResponse(null, null, 403));
+        const {rating, comment} = req.body;
+        const {userId} = res.locals;
+        if(!eventId || !userId){
+            return res.json(dataResponse(null, "Invalid Request", 404));
         }
         if(!userId || !rating || !comment){
-            res.json(dataResponse(null, "All field are required", 403));
+            return res.json(dataResponse(null, "All field are required", 403));
         }
-
         try {
              await review.create({
                 data: {
@@ -53,14 +53,16 @@ class reviewController{
 
     async updateReview(req, res){
         const {reviewId} = req.params;
-        if(!reviewId){
-            res.json(dataResponse(null, null, 403));
+        const {userId} = res.locals;
+        if(!reviewId || !userId){
+            return res.json(dataResponse(null, null, 403));
         }
         try {
             await review.update({
                 data: req.body,
                 where: {
-                    review_id: reviewId
+                    review_id: reviewId,
+                    user_id: userId
                 }
             })
             res.json(dataResponse(null, "Comment updated", 200));
@@ -71,13 +73,15 @@ class reviewController{
 
     async deleteReview(req, res){
         const {reviewId} = req.params;
-        if(!reviewId){
+        const {userId} = res.locals;
+        if(!reviewId || !userId){
             res.json(dataResponse(null, null, 403));
         }
         try {
             await review.delete({
                 where: {
-                    review_id: reviewId
+                    review_id: reviewId,
+                    user_id: userId
                 }
             })
             res.json(dataResponse(null, "Comment deleted", 200));

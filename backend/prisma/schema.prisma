@@ -22,6 +22,7 @@ model user {
   user_role      Role     @default(USER)
   reviews        reviews[]
   events         events[]
+  ticket         ticket[]
 }
 
 
@@ -29,7 +30,7 @@ enum Role {
   USER
   ADMIN
   ORGANIZATION
-  }
+}
 
 enum event{
   CONCERT
@@ -46,12 +47,14 @@ model events{
   event_description String
   event_poster    String?
   event_date      String
+  event_time      String
+  event_tikcet    Int
+  event_price     Int
   event_location  String
   event_type      event[]
   user_id    String?
   user       user? @relation(fields: [user_id], references: [user_id])
   reviews         reviews[]
-  tickets         ticket[]
 }
 
 model reviews{
@@ -68,8 +71,8 @@ model ticket{
   ticket_id       String   @id @default(uuid())
   ticket_price    Int
   ticket_quantity Int
-  event_id        String
-  event           events   @relation(fields: [event_id], references: [event_id])
+  user_id        String
+  user           user   @relation(fields: [user_id], references: [user_id])
 }
 
 
