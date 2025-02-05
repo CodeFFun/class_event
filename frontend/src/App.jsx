@@ -1,13 +1,12 @@
 import './lib/App.css'
-import Login from "./components/auth/LoginComponent"
-import Signup from "./components/auth/SignupComponent"
+import RouterComponent from './utils/RouterComponent'
 
 function App() {
 
   return (
-    <div>
-      <Signup />
-    </div>
+    <>
+      <RouterComponent />
+    </>
    
   )
 }
