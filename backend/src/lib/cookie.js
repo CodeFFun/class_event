@@ -7,7 +7,8 @@ const generateCookie = async (user, res) => {
     });
     res.cookie('token', token, {
         httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * 30
+        maxAge: 1000 * 60 * 60 * 24 * 30,
+        
     });
 }
 
