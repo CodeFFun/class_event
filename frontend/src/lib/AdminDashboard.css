@@ -1,0 +1,119 @@
+/* General Styles */
+.admin-dashboard {
+    font-family: Arial, sans-serif;
+    color: #fff;
+    background-color: #0c1534;
+}
+
+/* Header Styles */
+.admin-dashboard-header {
+    background-color: #0c1534;
+    padding: 20px 0;
+    border-bottom: 1px solid #192841;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.admin-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #36d1dc;
+}
+
+.logout-button {
+    background: red;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: opacity 0.3s ease;
+}
+
+.logout-button:hover {
+    opacity: 0.8;
+}
+
+/* Hero Section */
+.admin-hero-section {
+    background-color: #0c1534;
+    padding: 500px 0 80px;
+    text-align: center;
+}
+
+.hero-content h1 {
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.hero-content h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: #36d1dc;
+}
+
+.hero-content p {
+    font-size: 18px;
+    color: #aaa;
+}
+
+/* Organizers and Events Section */
+.admin-section {
+    padding: 40px 0;
+    text-align: center;
+}
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    max-width: 1000px;
+    margin: auto;
+}
+
+.admin-card {
+    background-color: #192841;
+    padding: 20px;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.admin-card:hover {
+    transform: translateY(-5px);
+}
+
+.admin-card h3 {
+    font-size: 20px;
+    color: #fff;
+}
+
+.section-title {
+    font-size: 28px; 
+    font-weight: bold; 
+    text-transform: uppercase; 
+    text-align: center; 
+    margin-bottom: 20px; 
+    color: #ffffff; 
+  }
+  
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-grid {
+        grid-template-columns: 1fr;
+    }
+}
