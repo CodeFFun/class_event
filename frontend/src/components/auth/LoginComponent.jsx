@@ -18,7 +18,7 @@ const LoginComponent = () => {
         <button type="submit">LOG IN</button>
       </form>
       <p>
-        Don’t have an account? <a href="signup.html">Sign up now</a>
+        Don’t have an account? <a href="/signup">Sign up now</a>
       </p>
       <div className="divider"></div>
       <div className="social-icons">
