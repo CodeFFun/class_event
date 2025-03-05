@@ -1,51 +1,41 @@
-import React, { useState } from 'react';
-import '../../lib/BuyerDashboard.css';
+import { useState, useEffect } from "react";
+import "../../lib/BuyerDashboard.css";
 
 const BuyerDashboard = () => {
-  const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false); // Separate state for booking modal
-  const [currentSection, setCurrentSection] = useState(""); // Track which section is being viewed
-  const [selectedItem, setSelectedItem] = useState(null); // Track the selected movie/event/sport for booking
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [eventListings, setEventListing] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
+    name: "",
+    email: "",
+    ticket_quantity: 0,
+    ticket_price: 0,
+    event_id: ""
   });
 
-  const sampleMovies = [
-    { title: "Venus", image: "", rating: "88%", price: "Rs.500" },
-    { title: "Alone", image: "", rating: "88%", price: "Rs.300" },
-  ];
 
-  const sampleEvents = [
-    { title: "Music Fest", image: "", rating: "90%", price: "Rs.200" },
-    { title: "Tech Expo", image: "", rating: "85%", price: "Rs.150" },
-  ];
+  useEffect(() => {
+    const userId = localStorage.getItem('authToken')
+    if(!userId){
+      window.location.href = "/login"
+    }
+    fetchData();
+  }, []);
 
-  const sampleSports = [
-    { title: "Football Match", image: "", rating: "95%", price: "Rs.300" },
-    { title: "Basketball Game", image: "", rating: "89%", price: "Rs.250" },
-  ];
+  const fetchData = async () => {
+    const res = await fetch('http://localhost:8080/event/all/get', {
+      credentials: 'include'
+    });
+    const data = await res.json();
+    console.log(data.data);
+    setEventListing(data.data);
+  }
 
-  // Toggle modal visibility for section
-  const toggleSectionModal = () => {
-    setIsSectionModalOpen(!isSectionModalOpen);
+  const handleBookNowClick = (event) => {
+    setSelectedItem(event);
+    setIsBookingModalOpen(true);
   };
 
-  // Handle section selection and modal opening
-  const openSection = (section) => {
-    setCurrentSection(section);
-    setIsSectionModalOpen(true); // Open the section modal
-  };
-
-  // Handle selecting an item to book
-  const handleBookNowClick = (item) => {
-    setSelectedItem(item);
-    setIsBookingModalOpen(true); // Open the booking modal
-    setIsSectionModalOpen(false); // Close the section modal when booking
-  };
-
-  // Handle form data change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -54,53 +44,23 @@ const BuyerDashboard = () => {
     }));
   };
 
-  // Handle form submission
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    // Here you can handle the form submission, like sending the data to an API
-    alert('Booking confirmed!');
-    setIsBookingModalOpen(false); // Close the booking modal after booking
-  };
-
-  // Render section content based on currentSection
-  const renderSectionContent = () => {
-    switch (currentSection) {
-      case "Movies":
-        return sampleMovies.map((movie, index) => (
-          <div key={index} className="movie-card">
-            <img src={movie.image} alt={movie.title} />
-            <p>{movie.title}</p>
-            <div className="movie-rating">
-              <span>{movie.rating}</span>
-            </div>
-            <button className="book-now-button" onClick={() => handleBookNowClick(movie)}>Book Now</button>
-          </div>
-        ));
-      case "Events":
-        return sampleEvents.map((event, index) => (
-          <div key={index} className="movie-card">
-            <img src={event.image} alt={event.title} />
-            <p>{event.title}</p>
-            <div className="movie-rating">
-              <span>{event.rating}</span>
-            </div>
-            <button className="book-now-button" onClick={() => handleBookNowClick(event)}>Book Now</button>
-          </div>
-        ));
-      case "Sports":
-        return sampleSports.map((sport, index) => (
-          <div key={index} className="movie-card">
-            <img src={sport.image} alt={sport.title} />
-            <p>{sport.title}</p>
-            <div className="movie-rating">
-              <span>{sport.rating}</span>
-            </div>
-            <button className="book-now-button" onClick={() => handleBookNowClick(sport)}>Book Now</button>
-          </div>
-        ));
-      default:
-        return null;
-    }
+    formData.ticket_price = selectedItem.event_price * formData.ticket_quantity;
+    formData.event_id = selectedItem.event_id;
+    
+    const res = await fetch(`http://localhost:8080/ticket`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(formData),
+    });
+    const data = await res.json();
+    console.log(data);
+    alert("Booking confirmed!");
+    setIsBookingModalOpen(false);
   };
 
   return (
@@ -111,11 +71,10 @@ const BuyerDashboard = () => {
             <span>EVENTHUB</span>
           </div>
           <nav className="dashboard-nav">
-            <a href="#" onClick={() => openSection("Movies")}>MOVIES</a>
-            <a href="#" onClick={() => openSection("Events")}>EVENTS</a>
-            <a href="#" onClick={() => openSection("Sports")}>SPORTS</a>
             <a href="#">CONTACT</a>
-            <button className="join-us-button"><a href="/login"> JOIN US </a></button>
+            <button className="join-us-button">
+              <a href="/login"> JOIN US </a>
+            </button>
           </nav>
         </div>
       </header>
@@ -130,58 +89,49 @@ const BuyerDashboard = () => {
 
       <section className="search-section">
         <div className="search-container">
-          <input type="text" placeholder="Search for Movies" />
+          <input type="text" placeholder="Search for Events" />
           <select>
             <option value="kathmandu">Kathmandu</option>
-            <option value="kathmandu">Pokhara</option>
+            <option value="pokhara">Pokhara</option>
           </select>
           <input type="date" />
-          
         </div>
       </section>
 
-      {/* Modal for Section Content */}
-      {isSectionModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>{currentSection} Listings</h2>
-            <div className="modal-content">
-              {renderSectionContent()}
+      <section className="content-section">
+        <h2>EVENTS</h2>
+        <div className="movie-grid">
+          {eventListings.map((event, index) => (
+            <div key={index} className="movie-card">
+              <img src={`http://localhost:8080/${event.event_poster}`} alt={event.event_name} className="h-5 w-full"/>
+              <p>{event.event_name}</p>
+              <div className="movie-rating">
+                <span>Rs {event.event_price}</span>
+              </div>
+              <button className="book-now-button" onClick={() => handleBookNowClick(event)}>Book Now</button>
             </div>
-            <button className="close-modal-button" onClick={toggleSectionModal}>Close</button>
-          </div>
+          ))}
         </div>
-      )}
+      </section>
 
-      {/* Modal for Booking Item */}
+      {/* Booking Modal */}
       {isBookingModalOpen && selectedItem && (
         <div className="modal-overlay">
           <div className="modal">
-            <h2>Book Your {currentSection === "Movies" ? "Movie" : currentSection === "Events" ? "Event" : "Sport"}</h2>
+            <h2>Book Your Event</h2>
             <div className="modal-content">
-              <p><strong>Title:</strong> {selectedItem.title}</p>
-              <p><strong>Price:</strong> {selectedItem.price}</p>
+              <p><strong>Title:</strong> {selectedItem.event_name}</p>
+              <p><strong>Price:</strong> {selectedItem.event_price}</p>
 
               <form onSubmit={handleFormSubmit}>
+              
                 <div className="form-group">
-                  <label htmlFor="firstName">First Name</label>
+                  <label htmlFor="lastName">Name</label>
                   <input
                     type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="lastName">Last Name</label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
+                    id="name"
+                    name="name"
+                    value={formData.name}
                     onChange={handleInputChange}
                     required
                   />
@@ -198,6 +148,17 @@ const BuyerDashboard = () => {
                     required
                   />
                 </div>
+                <div className="form-group">
+                  <label htmlFor="email">Quantity</label>
+                  <input
+                    type="number"
+                    id="ticket_quantity"
+                    name="ticket_quantity"
+                    value={formData.ticket_quantity}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
 
                 <button type="submit" className="book-now-button">Book Now</button>
               </form>
@@ -206,70 +167,6 @@ const BuyerDashboard = () => {
           </div>
         </div>
       )}
-
-      <section className="content-section">
-        <div className="content-grid">
-          <aside className="sidebar">
-            <div className="sidebar-item">
-              <p>24X7 Care</p>
-            </div>
-            <div className="sidebar-item">
-              <p>100% Assurance</p>
-            </div>
-            <div className="sidebar-item">
-              <p>Our Promise</p>
-            </div>
-            <div className="trending-searches">
-              <p>Trending Searches</p>
-            </div>
-          </aside>
-
-          <main className="main-content">
-            <h2>MOVIES</h2>
-            <div className="movie-grid">
-              {sampleMovies.map((movie, index) => (
-                <div key={index} className="movie-card">
-                  <img src={movie.image} alt={movie.title} />
-                  <p>{movie.title}</p>
-                  <div className="movie-rating">
-                    <span>{movie.rating}</span>
-                    <span>{movie.price}</span>
-                  </div>
-                  <button className="book-now-button" onClick={() => handleBookNowClick(movie)}>Book Now</button>
-                </div>
-              ))}
-            </div>
-
-            <h2>EVENTS</h2>
-            <div className="movie-grid">
-              {sampleEvents.map((event, index) => (
-                <div key={index} className="movie-card">
-                  <img src={event.image} alt={event.title} />
-                  <p>{event.title}</p>
-                  <div className="movie-rating">
-                    <span>{event.rating}</span>
-                  </div>
-                  <button className="book-now-button" onClick={() => handleBookNowClick(event)}>Book Now</button>
-                </div>
-              ))}
-            </div>
-
-            <h2>SPORTS</h2>
-            <div className="movie-grid">
-              {sampleSports.map((sport, index) => (
-                <div key={index} className="movie-card">
-                  <img src={sport.image} alt={sport.title} />
-                  <p>{sport.title}</p>
-                  <div className="movie-rating">
-                    <span>{sport.rating}</span>
-                  </div>
-                  <button className="book-now-button" onClick={() => handleBookNowClick(sport)}>Book Now</button>
-                </div>
-              ))}
-            </div>
-          </main>
-        </div>
-      </section>
     </div>
   );
 };

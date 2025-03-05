@@ -20,22 +20,20 @@ class ticketController{
     }
 
     createTicket = async (req, res) => {
-        const {userId} = req.locals;
-        const {ticketPrice, ticketQuantity} = req.body;
-        if(!userId){
-            return res.status(400).json(dataResponse(null, "No enough credientials", 400));
-        }
-        if(!ticketPrice || !ticketQuantity){
-            return res.status(400).json(dataResponse(null, "All fields are required", 400));
-        }
+        const {userId} = res.locals;
+        let {ticket_price, ticket_quantity, name, email} = req.body;
+        ticket_price = parseInt(ticket_price);
+        ticket_quantity = parseInt(ticket_quantity);
         try {
             await ticket.create({
                 data: {
-                    ticket_price: ticketPrice,
-                    ticket_quantity: ticketQuantity,
+                    ticket_price: ticket_price,
+                    ticket_quantity: ticket_quantity,
+                    name: name,
+                    email: email,
                     user:{
                         connect:{
-                            user_id: userId
+                            user_id: userId,
                         }
                     }
                 }

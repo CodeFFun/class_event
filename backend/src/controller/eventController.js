@@ -26,6 +26,18 @@ class eventController{
             res.json(dataResponse(null, "Internal Server Error", 500));
         }
     }
+
+    async getAllEvents(_, res){
+        try {
+            let tempEvent = await event.findMany()
+            if(!tempEvent){
+                return res.json(dataResponse(null, "Events doesn't exist", 404));
+            }
+            res.json(dataResponse(tempEvent, "Get All Events", 200));
+        } catch (error) {
+            res.json(dataResponse(null, "Internal Server Error", 500));
+        }
+    }
     
     async getEventByType(req, res){
         const {type} = req.body;
@@ -70,27 +82,18 @@ class eventController{
 
     async postEvent(req, res){
         let{userId} = res.locals;
-        let {event_name, event_type, event_description, event_date, event_time, event_location,event_ticket, event_price} = req.body;
-        let{file} = req
-        let event_poster = file.filename
-        event_type = stringToEnum(event_type);
-        if(!event_name || !event_type || !event_description || !event_date || !event_time || !event_location  ||!userId || !event_poster || !event_ticket || !event_price){
-            fs.unlink(path.join(__dirname, '../public', event_poster), (err) => {
-                if (err) console.error("Error deleting file:", err);
-            });
-            return res.json(dataResponse(null, "Not enough information", 400));
-        }
+        let {event_name, event_description, event_date, event_location, event_price} = req.body;
+        event_price = parseInt(event_price);
+        let event_poster = req.file.filename;
+       
         try {
             let tempEvent = await event.create({
                 data:{
                     event_name: event_name,
-                    event_type: [event_type],
                     event_description: event_description,
                     event_date: event_date,
-                    event_time: event_time,
-                    event_poster: event_poster,
                     event_location: event_location,
-                    event_ticket: event_ticket,
+                    event_poster: event_poster,
                     event_price: event_price,
                     user:{
                         connect: {user_id: userId}
@@ -100,9 +103,7 @@ class eventController{
             res.json(dataResponse(tempEvent, "Event Created", 200));
         } catch (error) {
             console.log(error.message)
-            fs.unlink(path.join(__dirname, '../public', event_poster), (err) => {
-                if (err) console.error("Error deleting file:", err);
-            });
+        
             res.json(dataResponse(null, "Internal Server Error", 500));
         }
     }
@@ -110,18 +111,7 @@ class eventController{
     async updateEvent(req, res){
         const {eventId} = req.params;
         let data = {...req.body}
-        let{file} = req
-
-        if(file){
-            data = {...req.body, event_poster: file.filename}
-        }
-
-        if(!eventId){
-            fs.unlink(path.join(__dirname, '../public', event_poster), (err) => {
-                if (err) console.error("Error deleting file:", err);
-            });
-            return res.json(dataResponse(null, "Not enough information", 400));
-        }
+        
         try {
             let tempEvent = await event.update({
                 where:{
@@ -131,9 +121,7 @@ class eventController{
             })
             res.json(dataResponse(null, "Event updated", 200));
         } catch (error) {
-            fs.unlink(path.join(__dirname, '../public', event_poster), (err) => {
-                if (err) console.error("Error deleting file:", err);
-            });
+           
             res.json(dataResponse(null, "Internal Server Error", 500));
         }
     }
