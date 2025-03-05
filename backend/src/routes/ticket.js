@@ -10,7 +10,7 @@ const ticket = new ticketController();
 ticketRouter.get('/:id',ticket.getAllTicket)
 
 //pass eventId as id 
-ticketRouter.post('/:id', ticket.createTicket)
+ticketRouter.post('/', ticket.createTicket)
 
 //pass reviewId as id
 ticketRouter.patch('/:id', ticket.updateTicket)

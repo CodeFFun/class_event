@@ -1,27 +1,48 @@
-import React, { useState } from "react";
+import  { useState, useEffect } from "react";
 import "../../lib/SellerDashboard.css";
 
 const SellerDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false); // For event details modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // For edit event modal
-  const [events, setEvents] = useState([
-    { title: "Music Fest", date: "2025-03-10", location: "New York", description: "Live music festival with top artists." },
-    { title: "Tech Expo", date: "2025-03-15", location: "San Francisco", description: "Latest technology trends and innovations." },
-  ]);
-  const [newEvent, setNewEvent] = useState({
-    title: "",
-    date: "",
-    location: "",
-    description: "",
-  });
+  const [events, setEvents] = useState([]);
+  const [formData, setFormData] = useState({
+    event_name: "",
+    event_date: "",
+    event_location: "",
+    event_description: "",
+    event_price: 0
+  })
   const [selectedEvent, setSelectedEvent] = useState(null); // To hold selected event details for viewing/editing
-  const [editEvent, setEditEvent] = useState({
-    title: "",
-    date: "",
-    location: "",
-    description: "",
-  });
+  const [editEvent, setEditEvent] = useState(null);
+
+  useEffect(() => {
+    const role = localStorage.getItem('role')
+    if(role !== "ORGANIZATION"){
+      window.location.href = "/"
+    }
+    fetchEvents();
+  }, []);
+
+  const handleFileChange = (e) => {
+    setFormData({ ...formData, event_poster: e.target.files[0] });
+  };
+
+  const fetchEvents = async () => {
+    const res = await fetch('http://localhost:8080/event', {
+      method: 'GET',
+      credentials: 'include'
+    })
+    const data = await res.json()
+
+    if (Array.isArray(data.data)) {
+      setEvents(data.data);  // Only set it if it's an array
+      console.log(events)
+    } else {
+      console.error("Unexpected API response format:", data);
+      setEvents([]); // Fallback to empty array
+    }
+  }
 
   // Open & close modal
   const toggleModal = () => {
@@ -30,7 +51,7 @@ const SellerDashboard = () => {
 
   // Open & close event details modal
   const toggleDetailModal = (event) => {
-    setSelectedEvent(event);
+    setSelectedEvent(event)
     setIsDetailModalOpen(!isDetailModalOpen);
   };
 
@@ -42,7 +63,10 @@ const SellerDashboard = () => {
 
   // Handle input change for new event
   const handleChange = (e) => {
-    setNewEvent({ ...newEvent, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData, 
+      [e.target.name]: e.target.value
+    }) 
   };
 
   // Handle input change for editing event
@@ -51,25 +75,51 @@ const SellerDashboard = () => {
   };
 
   // Add new event
-  const addEvent = () => {
-    setEvents([...events, newEvent]);
-    setNewEvent({ title: "", date: "", location: "", description: "" });
+  const addEvent = async () => {
+    const sendData = new FormData();
+    sendData.append("event_name", formData.event_name);
+    sendData.append("event_date", formData.event_date);
+    sendData.append("event_location", formData.event_location);
+    sendData.append("event_description", formData.event_description);
+    sendData.append("event_price", formData.event_price);
+    sendData.append("event_poster", formData.event_poster);
+
+    console.log(formData, sendData)
+
+    const res = await fetch('http://localhost:8080/event', {
+      method: 'POST',
+      body: sendData,
+      credentials: 'include'
+    })
+    const data = await res.json()
+    console.log(data)
     toggleModal();
   };
 
   // Update event after editing
-  const saveEditEvent = () => {
-    const updatedEvents = events.map((event) =>
-      event.title === editEvent.title ? editEvent : event
-    );
-    setEvents(updatedEvents);
+  const saveEditEvent = async () => {
+    console.log(editEvent)
+    const res = await fetch(`http://localhost:8080/event/${editEvent.event_id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(editEvent),
+      credentials: 'include'
+    })
+    const data = await res.json()
+    console.log(data)
     toggleEditModal(); // Close the edit modal after saving
   };
 
   // Delete event
-  const deleteEvent = () => {
-    const updatedEvents = events.filter((event) => event.title !== selectedEvent.title);
-    setEvents(updatedEvents);
+  const deleteEvent = async () => {
+    const res = await fetch(`http://localhost:8080/event/${selectedEvent.event_id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+    const data = await res.json()
+    console.log(data)
     toggleDetailModal(); // Close the detail modal after deleting
   };
 
@@ -105,15 +155,16 @@ const SellerDashboard = () => {
         <div className="events-grid">
           {events.map((event, index) => (
             <div key={index} className="event-card">
-              <img src="https://via.placeholder.com/150" alt="Event" className="event-image" />
+              <img src={`http://localhost:8080/${event.event_poster}`} alt="Event" className="event-image" />
               <div className="event-info">
-                <h3>{event.title}</h3>
-                <p><strong>Date:</strong> {event.date}</p>
-                <p><strong>Location:</strong> {event.location}</p>
-                <p>{event.description}</p>
+                <h3>{event.event_name}</h3>
+                <p><strong>Date:</strong> {event.event_date}</p>
+                <p><strong>Location:</strong> {event.event_location}</p>
+                <p>{event.event_description}</p>
               </div>
               <button
                 className="view-details-button"
+                id={event.event_id}
                 onClick={() => toggleDetailModal(event)} // Open event details modal
               >
                 View Details
@@ -128,10 +179,12 @@ const SellerDashboard = () => {
         <div className="modal-overlay">
           <div className="modal">
             <h2>Add New Event</h2>
-            <input type="text" name="title" placeholder="Event Title" value={newEvent.title} onChange={handleChange} />
-            <input type="date" name="date" value={newEvent.date} onChange={handleChange} />
-            <input type="text" name="location" placeholder="Event Location" value={newEvent.location} onChange={handleChange} />
-            <textarea name="description" placeholder="Event Description" value={newEvent.description} onChange={handleChange}></textarea>
+            <input type="text" name="event_name" placeholder="Event Title" value={formData.event_name} onChange={handleChange} />
+            <input type="date" name="event_date" value={formData.event_date} onChange={handleChange} />
+            <input type="text" name="event_location" placeholder="Event Location" value={formData.event_location} onChange={handleChange} />
+            <input type="number" name="event_price" placeholder="Event Price" value={formData.event_price} onChange={handleChange} />
+            <textarea name="event_description" placeholder="Event Description" value={formData.event_description} onChange={handleChange}></textarea>
+            <input type="file" name="event_poster" placeholder="Event Location"  onChange={handleFileChange }/>
             <div className="modal-buttons">
               <button onClick={addEvent}>Add Event</button>
               <button onClick={toggleModal} className="close-button">Cancel</button>
@@ -144,10 +197,10 @@ const SellerDashboard = () => {
       {isDetailModalOpen && selectedEvent && (
         <div className="modal-overlay">
           <div className="modal">
-            <h2>{selectedEvent.title}</h2>
-            <p><strong>Date:</strong> {selectedEvent.date}</p>
-            <p><strong>Location:</strong> {selectedEvent.location}</p>
-            <p><strong>Description:</strong> {selectedEvent.description}</p>
+            <h2>{selectedEvent.event_name}</h2>
+            <p><strong>Date:</strong> {selectedEvent.event_date}</p>
+            <p><strong>Location:</strong> {selectedEvent.event_location}</p>
+            <p><strong>Description:</strong> {selectedEvent.event_description}</p>
             <div className="modal-buttons">
               <button onClick={() => toggleEditModal(selectedEvent)}>Edit</button>
               <button onClick={deleteEvent} className="delete-button">Delete</button>
@@ -164,28 +217,28 @@ const SellerDashboard = () => {
             <h2>Edit Event</h2>
             <input
               type="text"
-              name="title"
+              name="event_name"
               placeholder="Event Title"
-              value={editEvent.title}
+              value={editEvent.event_name}
               onChange={handleEditChange}
             />
             <input
               type="date"
-              name="date"
-              value={editEvent.date}
+              name="event_date"
+              value={editEvent.event_date}
               onChange={handleEditChange}
             />
             <input
               type="text"
-              name="location"
+              name="event_location"
               placeholder="Event Location"
-              value={editEvent.location}
+              value={editEvent.event_location}
               onChange={handleEditChange}
             />
             <textarea
-              name="description"
+              name="event_description"
               placeholder="Event Description"
-              value={editEvent.description}
+              value={editEvent.event_description}
               onChange={handleEditChange}
             ></textarea>
             <div className="modal-buttons">

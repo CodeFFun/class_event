@@ -13,10 +13,11 @@ eventRouter.post('/type', event.getEventByType);
 eventRouter.get('/:eventId', event.getEventById);
 
 //for only organization and admin
-eventRouter.use(checkRole);
-eventRouter.get('/user', event.getEventOfUser);
-eventRouter.post('/', upload.single('image'),imageUpload,event.postEvent);
-eventRouter.patch('/:eventId',upload.single('image'),imageUpload, event.updateEvent);
+// eventRouter.use(checkRole);
+eventRouter.get('/all/get', event.getAllEvents);
+eventRouter.get('/', event.getEventOfUser);
+eventRouter.post('/',upload.single("event_poster"),event.postEvent);
+eventRouter.patch('/:eventId', event.updateEvent);
 eventRouter.delete('/:eventId', event.deleteEvent);
 
 module.exports = eventRouter;

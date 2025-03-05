@@ -4,9 +4,7 @@ const userController = require('../controller/userController.js');
 const userRouter = express.Router();
 const user = new userController();
 
-userRouter.get('/', (_, res) => {
-    res.send('User');
-})
+userRouter.get('/', user.getAllUser)
 
 userRouter.get('/:id', user.getUserById);
 

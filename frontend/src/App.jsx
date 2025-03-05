@@ -4,13 +4,15 @@ import Signup from "./components/auth/SignupComponent"
 import BuyerDashboard from './components/auth/BuyerDashboard'
 import SellerDashboard from './components/auth/SellerDashboard'
 import AdminDashboard from './components/auth/AdminDashboard'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 
 
 function App() {
 
   return (
     <Router>
+      
     <Routes>
       <Route path="/" element={<BuyerDashboard/>} />
       <Route path="/signup" element={<Signup />} />

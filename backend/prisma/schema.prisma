@@ -43,14 +43,14 @@ enum event{
 
 model events{
   event_id        String   @id @default(uuid())
-  event_name      String
-  event_description String
+  event_name      String?
+  event_description String?
   event_poster    String?
-  event_date      String
-  event_time      String
-  event_tikcet    Int
-  event_price     Int
-  event_location  String
+  event_date      String?
+  event_time      String?
+  event_tikcet    Int?
+  event_price     Int?
+  event_location  String?
   event_type      event[]
   user_id    String?
   user       user? @relation(fields: [user_id], references: [user_id])
@@ -59,8 +59,8 @@ model events{
 
 model reviews{
   review_id       String   @id @default(uuid())
-  review_content  String
-  review_rating   Int
+  review_content  String?
+  review_rating   Int?
   event_id        String
   user_id         String
   user            user     @relation(fields: [user_id], references: [user_id])
@@ -69,8 +69,10 @@ model reviews{
 
 model ticket{
   ticket_id       String   @id @default(uuid())
-  ticket_price    Int
-  ticket_quantity Int
+  name            String?
+  email           String?
+  ticket_price    Int?
+  ticket_quantity Int?
   user_id        String
   user           user   @relation(fields: [user_id], references: [user_id])
 }

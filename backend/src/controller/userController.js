@@ -5,8 +5,22 @@ const {user} = require('../lib/client.js')
 const{generateCookie} = require('../lib/cookie.js');
 
 class userController{
+
+
+    getAllUser = async (req, res) => {
+        try{
+            //get all the users from the database
+            let newUser = await user.findMany({where: {user_role: 'ORGANIZATION'}});
+            if(!newUser){
+                return res.json(dataResponse(null, 'No user found', 404));
+            }
+            res.json(dataResponse(newUser, 'Users fetched successfully', 200));
+        } catch(e){
+            res.json(dataResponse(null, e.message, 500));
+        }
+    }
      createUser = async (req, res) => {
-        let {name,email, password, contact} = req.body;
+        let {name,email, password, contact, role} = req.body;
         if(!name || !email || !password || !contact ){
            return res.json(dataResponse(null, 'All fields are required', 400));
         }
@@ -18,7 +32,8 @@ class userController{
                     user_name:name,
                     user_email:email,
                     user_password:password,
-                    user_contact:contact
+                    user_contact:contact,
+                    user_role:role.toUpperCase()
                 }
             })
             //create a jwt token and send it to the user cookie

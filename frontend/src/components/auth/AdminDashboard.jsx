@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import "../../lib/AdminDashboard.css";
 
 const AdminDashboard = () => {
@@ -7,14 +7,38 @@ const AdminDashboard = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [organizers, setOrganizers] = useState([
-    { name: "Alice Johnson", email: "alice@example.com", events: 5 },
-    { name: "Bob Smith", email: "bob@example.com", events: 3 },
   ]);
 
   const [events, setEvents] = useState([
-    { title: "Corporate Meetup", date: "2025-04-01", location: "Chicago", organizer: "Alice Johnson" },
-    { title: "Art Exhibition", date: "2025-04-10", location: "Los Angeles", organizer: "Bob Smith" },
   ]);
+
+  useEffect(() => {
+    const role = localStorage.getItem('role')
+    if(role !== "ADMIN"){
+      window.location.href = "/"
+    }
+    fetchData();
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    const res = await fetch('http://localhost:8080/event', {
+      method: 'GET',
+      credentials: 'include'
+    })
+    const data = await res.json()
+    console.log(data.data);
+    setEvents(data.data);
+  }
+
+  const fetchData = async () => {
+    const res = await fetch('http://localhost:8080/user', {
+      credentials: 'include'
+    });
+    const data = await res.json();
+    console.log(data.data);
+    setOrganizers(data.data);
+  }
 
   const toggleDetailModal = (user) => {
     setSelectedUser(user);
@@ -26,13 +50,24 @@ const AdminDashboard = () => {
     setIsEventModalOpen(!isEventModalOpen);
   };
 
-  const deleteUser = () => {
-    setOrganizers(organizers.filter((org) => org.email !== selectedUser.email));
+  const deleteUser = async () => {
+    const res = await fetch(`http://localhost:8080/user/${selectedUser.user_id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    const data = await res.json();
+    console.log(data);
+    
     setIsDetailModalOpen(false);
   };
 
-  const deleteEvent = () => {
-    setEvents(events.filter((ev) => ev.title !== selectedEvent.title));
+  const deleteEvent = async() => {
+    const res = await fetch(`http://localhost:8080/event/${selectedEvent.event_id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    const data = await res.json();
+    console.log(data);
     setIsEventModalOpen(false);
   };
 
@@ -66,9 +101,9 @@ const AdminDashboard = () => {
         <div className="organizers-grid">
           {organizers.map((organizer, index) => (
             <div key={index} className="organizer-card">
-              <h3>{organizer.name}</h3>
-              <p><strong>Email:</strong> {organizer.email}</p>
-              <p><strong>Events:</strong> {organizer.events}</p>
+              <h3>{organizer.user_name}</h3>
+              <p><strong>Email:</strong> {organizer.user_email}</p>
+              <p><strong>Contacts:</strong> {organizer.user_contact}</p>
               <button className="view-details-button" onClick={() => toggleDetailModal(organizer)}>View Details</button>
             </div>
           ))}
@@ -81,10 +116,10 @@ const AdminDashboard = () => {
         <div className="events-grid">
           {events.map((event, index) => (
             <div key={index} className="event-card">
-              <h3>{event.title}</h3>
-              <p><strong>Date:</strong> {event.date}</p>
-              <p><strong>Location:</strong> {event.location}</p>
-              <p><strong>Organizer:</strong> {event.organizer}</p>
+              <img src={`http://localhost:8080/${event.event_poster}`} className="w-full h-6" />
+              <h3>{event.event_name}</h3>
+              <p><strong>Date:</strong> {event.event_date}</p>
+              <p><strong>Location:</strong> {event.event_location}</p>
               <button className="view-details-button" onClick={() => toggleEventModal(event)}>Edit Event</button>
             </div>
           ))}
@@ -96,8 +131,8 @@ const AdminDashboard = () => {
         <div className="modal-overlay">
           <div className="modal">
             <h2>{selectedUser.name}</h2>
-            <p><strong>Email:</strong> {selectedUser.email}</p>
-            <p><strong>Events Hosted:</strong> {selectedUser.events}</p>
+            <p><strong>Email:</strong> {selectedUser.user_email}</p>
+            <p><strong>Name</strong> {selectedUser.user_name}</p>
             <div className="modal-buttons">
               <button onClick={toggleDetailModal} className="close-button">Close</button>
               <button onClick={deleteUser} className="delete-button">Delete</button>
@@ -110,9 +145,9 @@ const AdminDashboard = () => {
       {isEventModalOpen && selectedEvent && (
         <div className="modal-overlay">
           <div className="modal">
-            <h2>{selectedEvent.title}</h2>
-            <p><strong>Date:</strong> {selectedEvent.date}</p>
-            <p><strong>Location:</strong> {selectedEvent.location}</p>
+            <h2>{selectedEvent.event_name}</h2>
+            <p><strong>Date:</strong> {selectedEvent.event_date}</p>
+            <p><strong>Location:</strong> {selectedEvent.event_location}</p>
             <p><strong>Organizer:</strong> {selectedEvent.organizer}</p>
             <div className="modal-buttons">
               <button onClick={toggleEventModal} className="close-button">Close</button>
